@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dismissal — Classroom Monitor</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+
+    <!-- Persistent Desktop Header -->
+    <header class="top-header">
+      <div class="header-left">
+        <button type="button" id="btn-back-start" class="btn-back hidden">
+          ← Start Screen
+        </button>
+        <div class="title-group">
+          <h1 id="header-title" class="header-title">Dismissal</h1>
+          <span id="header-subtitle" class="header-subtitle hidden"></span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <button type="button" id="btn-sound-toggle" class="btn-sound" title="Toggle new-student notification chime">
+          🔔 Chime On
+        </button>
+        <span id="sync-badge" class="sync-badge sync-live">Live • Synced</span>
+      </div>
+    </header>
+
+    <!-- Demo Mode Banner (Shown only before CONFIG.API_URL is set) -->
+    <div id="demo-banner" class="demo-banner hidden">
+      Demo Mode Active — Paste your Google Apps Script Web App URL into <code>app.js</code> (<code>CONFIG.API_URL</code>) for live Google Sheets sync.
+    </div>
+
+    <!-- ===================================================================
+         SCREEN 1: START SCREEN (NO PIN — ALL GRADES, GRADES & CLASSES)
+         =================================================================== -->
+    <main id="screen-start" class="screen screen-start">
+      <div class="start-container">
+        <section class="start-section">
+          <div class="section-heading">
+            <h2>Select Grade View</h2>
+            <p>Monitor all students across the school or filter by a specific grade level</p>
+          </div>
+          <div id="grade-buttons-grid" class="filter-grid grade-grid"></div>
+        </section>
+
+        <section class="start-section">
+          <div class="section-heading">
+            <h2>Select Classroom / Teacher</h2>
+            <p>Filter dismissal alerts for a specific classroom</p>
+          </div>
+          <div id="class-buttons-grid" class="filter-grid class-grid"></div>
+        </section>
+      </div>
+    </main>
+
+    <!-- ===================================================================
+         SCREEN 2: 3-PANEL CLASSROOM DISMISSAL MONITOR
+         =================================================================== -->
+    <main id="screen-monitor" class="screen screen-monitor hidden">
+
+      <!-- Left Panel: Called Buses (Dynamic Width = Widest Recent Bus String) -->
+      <aside id="panel-buses" class="monitor-panel panel-buses">
+        <div class="panel-header buses-header">
+          <h2>Called Buses</h2>
+          <span id="count-buses" class="panel-count">0</span>
+        </div>
+        <div id="buses-list" class="buses-list"></div>
+      </aside>
+
+      <!-- Middle Panel: Needed at Valet (Light Yellow-ish) -->
+      <section id="panel-valet" class="monitor-panel panel-valet">
+        <div class="panel-header valet-header">
+          <div class="panel-title-wrap">
+            <span class="panel-dot dot-valet"></span>
+            <h2>Needed at Valet</h2>
+          </div>
+          <span id="count-valet" class="panel-count count-valet">0</span>
+        </div>
+        <div id="valet-grid" class="tiles-grid"></div>
+      </section>
+
+      <!-- Right Panel: Needed at Pick Up Door (Light Green-ish) -->
+      <section id="panel-pickup" class="monitor-panel panel-pickup">
+        <div class="panel-header pickup-header">
+          <div class="panel-title-wrap">
+            <span class="panel-dot dot-pickup"></span>
+            <h2>Needed at Pick Up Door</h2>
+          </div>
+          <span id="count-pickup" class="panel-count count-pickup">0</span>
+        </div>
+        <div id="pickup-grid" class="tiles-grid"></div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
