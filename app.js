@@ -5,7 +5,7 @@
 
 const CONFIG = {
   // Replace with your deployed Google Apps Script Web App URL:
-  API_URL: 'https://script.google.com/macros/s/AKfycbwuhV1WDETx0R8-MMFaBiXjEkdDCq_jsGH49ALedQuhP6ALcibfC4i9-g6hCMHdCcWu/exec',
+  API_URL: 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL',
   POLL_INTERVAL_MS: 3500, // 3.5s polling (shares GAS 3s cache cleanly)
 
   // Dynamic squarish tile sizing parameters (in pixels)
@@ -23,7 +23,6 @@ const STATE = {
   view: 'start', // 'start' | 'monitor'
   filterType: 'grade', // 'grade' | 'class'
   filterValue: '',
-  filterGradeContext: '',
   students: [],
   activeBuses: [],
   mruBuses: [],
@@ -46,12 +45,15 @@ document.addEventListener('DOMContentLoaded', () => {
   bindHeaderEvents();
   setupResizeObservers();
 
-  if (!CONFIG.API_URL || CONFIG.API_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL') {
+  const apiUrl = String(CONFIG.API_URL || '').trim();
+  if (!apiUrl || apiUrl === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL') {
     STATE.isDemoMode = true;
-    document.getElementById('demo-banner').classList.remove('hidden');
+    showStatusBanner('Demo Mode Active — Paste your Google Apps Script Web App URL into app.js (CONFIG.API_URL) for live Google Sheets sync.');
     loadDemoData();
     renderAll();
   } else {
+    // Render the 7 grade panels and 'Whole Grade' buttons immediately while fetching live data
+    renderAll();
     fetchLatestState();
   }
 
@@ -69,6 +71,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, 5000);
 });
+
+function showStatusBanner(message) {
+  const banner = document.getElementById('demo-banner');
+  if (!banner) return;
+  banner.textContent = message;
+  banner.classList.remove('hidden');
+}
+
+function hideStatusBanner() {
+  if (STATE.isDemoMode) return;
+  const banner = document.getElementById('demo-banner');
+  if (banner) banner.classList.add('hidden');
+}
 
 function bindHeaderEvents() {
   document.getElementById('btn-back-start').addEventListener('click', () => {
@@ -137,12 +152,20 @@ async function fetchLatestState() {
     const json = await res.json();
 
     if (json && json.ok && json.data) {
+      hideStatusBanner();
       applyServerState(json.data);
       updateSyncBadge(true);
     } else {
+      const errMsg = (json && json.error) ? json.error : 'Unknown backend response';
+      if (errMsg.toLowerCase().includes('unauthorized')) {
+        showStatusBanner('Backend Authorization Error: In Google Apps Script, go to Deploy > Manage deployments > Edit > Version: New version > Deploy so the updated Code.gs goes live.');
+      } else {
+        showStatusBanner(`Sync Notice: ${errMsg}`);
+      }
       updateSyncBadge(false);
     }
   } catch (err) {
+    showStatusBanner('Unable to reach Google Apps Script Web App. Verify CONFIG.API_URL and confirm Web App access is set to "Anyone".');
     updateSyncBadge(false);
   }
 }
@@ -230,8 +253,10 @@ function extractClassPrefix(classInfo) {
 
 function getTeachersForGrade(grade) {
   const teacherSet = new Set();
+  const targetGrade = String(grade).trim().toLowerCase();
+
   STATE.students.forEach((st) => {
-    if (st.grade === grade) {
+    if (String(st.grade || '').trim().toLowerCase() === targetGrade) {
       const teacher = extractClassPrefix(st.classInfo);
       if (teacher) teacherSet.add(teacher);
     }
@@ -271,7 +296,7 @@ function renderStartScreen() {
     if (teachers.length === 0) {
       const note = document.createElement('div');
       note.className = 'no-teachers-note';
-      note.textContent = 'No classes listed';
+      note.textContent = STATE.students.length === 0 ? 'Loading classes...' : 'No classes listed';
       teacherList.appendChild(note);
     } else {
       teachers.forEach((teacher) => {
@@ -317,7 +342,6 @@ function renderStartScreen() {
 }
 
 function openMonitorView(filterType, filterValue, displayTitle) {
-  // User interaction unlocks browser Web Audio for subsequent notifications
   unlockAudioContext();
 
   STATE.view = 'monitor';
@@ -347,8 +371,12 @@ function openMonitorView(filterType, filterValue, displayTitle) {
    ========================================================================== */
 function renderMonitorScreen() {
   const matchingStudents = STATE.students.filter((st) => {
-    if (STATE.filterType === 'grade') return st.grade === STATE.filterValue;
-    if (STATE.filterType === 'class') return extractClassPrefix(st.classInfo) === STATE.filterValue;
+    if (STATE.filterType === 'grade') {
+      return String(st.grade || '').trim().toLowerCase() === String(STATE.filterValue).trim().toLowerCase();
+    }
+    if (STATE.filterType === 'class') {
+      return extractClassPrefix(st.classInfo) === STATE.filterValue;
+    }
     return true;
   });
 
@@ -412,18 +440,12 @@ function renderMonitorScreen() {
   renderStudentTilesPanel('pickup-grid', pickupStudents, 'No students currently needed at Pick Up Door.');
 }
 
-/**
- * Sets the left Called Buses panel width equal to the exact pixel textWidth
- * of the widest string in the Call Buses recent buses list (mruBuses),
- * plus horizontal container & pill padding so the widest string fits cleanly.
- */
 function updateBusesPanelWidth() {
   const panelEl = document.getElementById('panel-buses');
   const candidateStrings = STATE.mruBuses.length > 0 ? STATE.mruBuses : STATE.activeBuses;
 
   const canvas = updateBusesPanelWidth._canvas || (updateBusesPanelWidth._canvas = document.createElement('canvas'));
   const ctx = canvas.getContext('2d');
-  // Match exact .bus-pill font specification (800 weight, 1.02rem ~ 16.32px)
   ctx.font = '800 16.32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
   let maxTextWidth = 0;
@@ -432,7 +454,6 @@ function updateBusesPanelWidth() {
     if (w > maxTextWidth) maxTextWidth = w;
   });
 
-  // Add horizontal padding for .buses-list (20px) + .bus-pill padding & left accent border (32px)
   const horizontalChrome = 54;
   const computedPanelWidth = Math.max(150, Math.ceil(maxTextWidth + horizontalChrome));
   panelEl.style.width = `${computedPanelWidth}px`;
@@ -477,11 +498,6 @@ function renderStudentTilesPanel(gridId, students, emptyMessage) {
   applyDynamicTileSizing(gridEl);
 }
 
-/**
- * Dynamically shrinks squarish tiles so all N tiles fit inside the panel without
- * scrolling, down to CONFIG.TILE_MIN_SIZE. Once the floor is reached, tiles hold
- * at TILE_MIN_SIZE and vertical scrolling activates for rows below.
- */
 function applyDynamicTileSizing(gridEl) {
   const count = gridEl.querySelectorAll('.student-tile').length;
   if (count === 0) return;
@@ -511,13 +527,11 @@ function applyDynamicTileSizing(gridEl) {
   }
 
   if (bestSize >= minSize) {
-    // All tiles fit on screen at once without scrolling
     const tileH = Math.round(bestSize * ratio);
     gridEl.style.gridTemplateColumns = `repeat(${bestCols}, minmax(0, 1fr))`;
     gridEl.style.gridAutoRows = `${tileH}px`;
     gridEl.style.overflowY = 'hidden';
   } else {
-    // Floor reached: hold at TILE_MIN_SIZE and allow vertical scrolling for extra rows
     const floorCols = maxPossibleCols;
     const floorTileH = Math.round(minSize * ratio);
     gridEl.style.gridTemplateColumns = `repeat(${floorCols}, minmax(0, 1fr))`;
@@ -538,7 +552,6 @@ function createStudentTileElement(student) {
   ].filter(Boolean).join(' ');
   tile.dataset.rowIndex = student.rowIndex;
 
-  // Top Row: Child's Name (no grade badge) + Whole-Minute Counter on right
   const topRow = document.createElement('div');
   topRow.className = 'tile-top';
 
@@ -563,7 +576,6 @@ function createStudentTileElement(student) {
 
   topRow.append(namesCol, minBadge);
 
-  // Bottom Row: Exclusive Checkboxes ('Bus', 'Aftercare', 'On the Way')
   const bottomRow = document.createElement('div');
   bottomRow.className = 'tile-checkboxes';
 
@@ -583,11 +595,9 @@ function createStudentTileElement(student) {
     cb.checked = isChecked;
 
     cb.addEventListener('change', () => {
-      // Exclusive toggle: selecting one unchecks others; unchecking active clears to ''
       const nextLocation = cb.checked ? opt.value : '';
       student.location = nextLocation;
 
-      // Optimistically re-render monitor panels & persist to 'location' column
       renderMonitorScreen();
       sendLocationUpdate(student.rowIndex, nextLocation);
     });
@@ -677,7 +687,6 @@ function playPleasantNotificationChime() {
     if (!ctx) return;
 
     const now = ctx.currentTime;
-    // Soft two-note ascending major chime (E5 -> A5)
     const notes = [
       { freq: 659.25, start: 0.0, duration: 0.45, gain: 0.14 },
       { freq: 880.00, start: 0.14, duration: 0.65, gain: 0.16 }
@@ -700,9 +709,7 @@ function playPleasantNotificationChime() {
       osc.start(now + n.start);
       osc.stop(now + n.start + n.duration + 0.05);
     });
-  } catch (e) {
-    // Ignore audio autoplay errors if user hasn't interacted yet
-  }
+  } catch (e) {}
 }
 
 /* ==========================================================================
