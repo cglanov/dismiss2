@@ -16,18 +16,22 @@ const CONFIG = {
   TILE_PADDING: 10
 };
 
-const GRADE_ORDER = ['preK', 'K', '1', '2', '3', '4', '5'];
+// Exact left-to-right panel order on the Start Screen
+const GRADE_PANELS = ['preK', 'K', '1', '2', '3', '4', '5'];
 
 const STATE = {
   view: 'start', // 'start' | 'monitor'
-  filterType: 'all', // 'all' | 'grade' | 'class'
+  filterType: 'grade', // 'grade' | 'class'
   filterValue: '',
+  filterGradeContext: '',
   students: [],
   activeBuses: [],
   mruBuses: [],
   knownVisibleIds: new Set(),
   recentNewIds: new Set(),
-  hasInitializedMonitorIds: false,
+  knownActiveBuses: new Set(),
+  recentNewBuses: new Set(),
+  hasInitializedMonitorTracking: false,
   soundEnabled: true,
   audioCtx: null,
   inFlightWrites: 0,
@@ -69,12 +73,14 @@ document.addEventListener('DOMContentLoaded', () => {
 function bindHeaderEvents() {
   document.getElementById('btn-back-start').addEventListener('click', () => {
     STATE.view = 'start';
-    STATE.hasInitializedMonitorIds = false;
+    STATE.hasInitializedMonitorTracking = false;
     STATE.knownVisibleIds.clear();
     STATE.recentNewIds.clear();
+    STATE.knownActiveBuses.clear();
+    STATE.recentNewBuses.clear();
 
     document.getElementById('btn-back-start').classList.add('hidden');
-    document.getElementById('header-title').textContent = 'Dismissal';
+    document.getElementById('header-title').textContent = 'DISMISSAL';
     document.getElementById('header-subtitle').classList.add('hidden');
 
     document.getElementById('screen-monitor').classList.add('hidden');
@@ -213,7 +219,7 @@ async function flushRetryQueue() {
 }
 
 /* ==========================================================================
-   SCREEN 1: START SCREEN (ALL GRADES, UNIQUE GRADES, UNIQUE CLASSES)
+   SCREEN 1: 7-PANEL START SCREEN (preK, K, 1, 2, 3, 4, 5)
    ========================================================================== */
 function extractClassPrefix(classInfo) {
   const raw = String(classInfo || '').trim();
@@ -222,90 +228,92 @@ function extractClassPrefix(classInfo) {
   return (sepIdx !== -1 ? raw.slice(0, sepIdx) : raw).trim();
 }
 
-function getUniqueGrades() {
-  const set = new Set();
+function getTeachersForGrade(grade) {
+  const teacherSet = new Set();
   STATE.students.forEach((st) => {
-    if (st.grade) set.add(st.grade);
-  });
-
-  // Ensure standard grades appear in logical PreK -> 5 order, followed by any custom grades
-  const ordered = [];
-  GRADE_ORDER.forEach((g) => {
-    if (set.has(g)) {
-      ordered.push(g);
-      set.delete(g);
+    if (st.grade === grade) {
+      const teacher = extractClassPrefix(st.classInfo);
+      if (teacher) teacherSet.add(teacher);
     }
   });
-  Array.from(set).sort().forEach((g) => ordered.push(g));
-  return ordered;
+  return Array.from(teacherSet).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 }
 
-function getUniqueClassPrefixes() {
-  const set = new Set();
-  STATE.students.forEach((st) => {
-    const prefix = extractClassPrefix(st.classInfo);
-    if (prefix) set.add(prefix);
-  });
-  return Array.from(set).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-}
-
-function countActiveStudentsForFilter(filterType, filterValue) {
+function countActiveStudentsForTeacher(teacherName) {
   return STATE.students.filter((st) => {
     if (st.status !== 'Needed at Valet' && st.status !== 'Needed at Pick Up Door') {
       return false;
     }
-    if (filterType === 'all') return true;
-    if (filterType === 'grade') return st.grade === filterValue;
-    if (filterType === 'class') return extractClassPrefix(st.classInfo) === filterValue;
-    return false;
+    return extractClassPrefix(st.classInfo) === teacherName;
   }).length;
 }
 
 function renderStartScreen() {
-  const gradeGrid = document.getElementById('grade-buttons-grid');
-  const classGrid = document.getElementById('class-buttons-grid');
-  gradeGrid.innerHTML = '';
-  classGrid.innerHTML = '';
+  const container = document.getElementById('grade-panels-container');
+  container.innerHTML = '';
 
-  // 1. 'All Grades' button
-  const allCount = countActiveStudentsForFilter('all', '');
-  const allBtn = createStartFilterButton('All Grades', allCount, true);
-  allBtn.addEventListener('click', () => openMonitorView('all', 'All Grades'));
-  gradeGrid.appendChild(allBtn);
+  GRADE_PANELS.forEach((grade) => {
+    const panel = document.createElement('section');
+    panel.className = `grade-panel grade-panel-${grade}`;
 
-  // 2. Unique Grade buttons (preK, K, 1, 2, 3, 4, 5)
-  getUniqueGrades().forEach((grade) => {
-    const count = countActiveStudentsForFilter('grade', grade);
-    const label = grade === 'preK' || grade === 'K' ? grade : `Grade ${grade}`;
-    const btn = createStartFilterButton(label, count, false);
-    btn.addEventListener('click', () => openMonitorView('grade', grade, label));
-    gradeGrid.appendChild(btn);
+    // Grade Header
+    const header = document.createElement('div');
+    header.className = 'grade-panel-header';
+    const h2 = document.createElement('h2');
+    h2.textContent = grade;
+    header.appendChild(h2);
+
+    // Teacher Buttons List for this Grade Level
+    const teacherList = document.createElement('div');
+    teacherList.className = 'teacher-buttons-list';
+
+    const teachers = getTeachersForGrade(grade);
+    if (teachers.length === 0) {
+      const note = document.createElement('div');
+      note.className = 'no-teachers-note';
+      note.textContent = 'No classes listed';
+      teacherList.appendChild(note);
+    } else {
+      teachers.forEach((teacher) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'teacher-btn';
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'teacher-btn-name';
+        nameSpan.textContent = teacher;
+        btn.appendChild(nameSpan);
+
+        const activeCount = countActiveStudentsForTeacher(teacher);
+        if (activeCount > 0) {
+          const dot = document.createElement('span');
+          dot.className = 'teacher-active-dot';
+          dot.textContent = activeCount;
+          btn.appendChild(dot);
+        }
+
+        btn.addEventListener('click', () => {
+          const gradeLabel = grade === 'preK' || grade === 'K' ? grade : `Grade ${grade}`;
+          openMonitorView('class', teacher, `${teacher} (${gradeLabel})`);
+        });
+
+        teacherList.appendChild(btn);
+      });
+    }
+
+    // Bottom 'Whole Grade' Button
+    const wholeGradeBtn = document.createElement('button');
+    wholeGradeBtn.type = 'button';
+    wholeGradeBtn.className = `whole-grade-btn whole-grade-${grade}`;
+    wholeGradeBtn.textContent = 'Whole Grade';
+    wholeGradeBtn.addEventListener('click', () => {
+      const gradeLabel = grade === 'preK' || grade === 'K' ? `${grade} — Whole Grade` : `Grade ${grade} — Whole Grade`;
+      openMonitorView('grade', grade, gradeLabel);
+    });
+
+    panel.append(header, teacherList, wholeGradeBtn);
+    container.appendChild(panel);
   });
-
-  // 3. Unique Class prefix buttons (portion of 'class' column before ' - ')
-  getUniqueClassPrefixes().forEach((classPrefix) => {
-    const count = countActiveStudentsForFilter('class', classPrefix);
-    const btn = createStartFilterButton(classPrefix, count, false);
-    btn.addEventListener('click', () => openMonitorView('class', classPrefix, classPrefix));
-    classGrid.appendChild(btn);
-  });
-}
-
-function createStartFilterButton(labelText, activeCount, isAllGrades) {
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.className = isAllGrades ? 'filter-btn btn-all-grades' : 'filter-btn';
-
-  const label = document.createElement('span');
-  label.className = 'filter-btn-label';
-  label.textContent = labelText;
-
-  const badge = document.createElement('span');
-  badge.className = `filter-btn-count ${activeCount > 0 ? 'has-active' : ''}`.trim();
-  badge.textContent = activeCount === 1 ? '1 called' : `${activeCount} called`;
-
-  btn.append(label, badge);
-  return btn;
 }
 
 function openMonitorView(filterType, filterValue, displayTitle) {
@@ -315,15 +323,17 @@ function openMonitorView(filterType, filterValue, displayTitle) {
   STATE.view = 'monitor';
   STATE.filterType = filterType;
   STATE.filterValue = filterValue;
-  STATE.hasInitializedMonitorIds = false;
+  STATE.hasInitializedMonitorTracking = false;
   STATE.knownVisibleIds.clear();
   STATE.recentNewIds.clear();
+  STATE.knownActiveBuses.clear();
+  STATE.recentNewBuses.clear();
 
   document.getElementById('btn-back-start').classList.remove('hidden');
-  document.getElementById('header-title').textContent = 'Dismissal';
+  document.getElementById('header-title').textContent = 'DISMISSAL';
 
   const subtitle = document.getElementById('header-subtitle');
-  subtitle.textContent = displayTitle || filterValue || 'All Grades';
+  subtitle.textContent = displayTitle || filterValue;
   subtitle.classList.remove('hidden');
 
   document.getElementById('screen-start').classList.add('hidden');
@@ -336,13 +346,10 @@ function openMonitorView(filterType, filterValue, displayTitle) {
    SCREEN 2: THREE-PANEL MONITOR (BUSES, NEEDED AT VALET, NEEDED AT PICK UP DOOR)
    ========================================================================== */
 function renderMonitorScreen() {
-  updateBusesPanelWidth();
-  renderCalledBusesPanel();
-
   const matchingStudents = STATE.students.filter((st) => {
     if (STATE.filterType === 'grade') return st.grade === STATE.filterValue;
     if (STATE.filterType === 'class') return extractClassPrefix(st.classInfo) === STATE.filterValue;
-    return true; // 'all'
+    return true;
   });
 
   const valetStudents = matchingStudents
@@ -353,19 +360,23 @@ function renderMonitorScreen() {
     .filter((st) => st.status === 'Needed at Pick Up Door')
     .sort(compareStudentsByLastThenFirst);
 
-  // Detect newly appeared tiles and play pleasant chime
+  // Track newly appeared student tiles AND newly added buses
   const currentVisibleIds = new Set();
   valetStudents.forEach((s) => currentVisibleIds.add(s.rowIndex));
   pickupStudents.forEach((s) => currentVisibleIds.add(s.rowIndex));
 
-  if (!STATE.hasInitializedMonitorIds) {
+  const currentBusSet = new Set(STATE.activeBuses);
+
+  if (!STATE.hasInitializedMonitorTracking) {
     STATE.knownVisibleIds = currentVisibleIds;
-    STATE.hasInitializedMonitorIds = true;
+    STATE.knownActiveBuses = currentBusSet;
+    STATE.hasInitializedMonitorTracking = true;
   } else {
-    let newlyAppearedCount = 0;
+    let shouldChime = false;
+
     currentVisibleIds.forEach((rowIdx) => {
       if (!STATE.knownVisibleIds.has(rowIdx)) {
-        newlyAppearedCount++;
+        shouldChime = true;
         STATE.recentNewIds.add(rowIdx);
         setTimeout(() => {
           STATE.recentNewIds.delete(rowIdx);
@@ -373,12 +384,26 @@ function renderMonitorScreen() {
       }
     });
 
-    STATE.knownVisibleIds = currentVisibleIds;
+    currentBusSet.forEach((busStr) => {
+      if (!STATE.knownActiveBuses.has(busStr)) {
+        shouldChime = true;
+        STATE.recentNewBuses.add(busStr);
+        setTimeout(() => {
+          STATE.recentNewBuses.delete(busStr);
+        }, 2000);
+      }
+    });
 
-    if (newlyAppearedCount > 0) {
+    STATE.knownVisibleIds = currentVisibleIds;
+    STATE.knownActiveBuses = currentBusSet;
+
+    if (shouldChime) {
       playPleasantNotificationChime();
     }
   }
+
+  updateBusesPanelWidth();
+  renderCalledBusesPanel();
 
   document.getElementById('count-valet').textContent = valetStudents.length;
   document.getElementById('count-pickup').textContent = pickupStudents.length;
@@ -425,7 +450,8 @@ function renderCalledBusesPanel() {
 
   STATE.activeBuses.forEach((busText) => {
     const pill = document.createElement('div');
-    pill.className = 'bus-pill';
+    const isNewBus = STATE.recentNewBuses.has(busText);
+    pill.className = `bus-pill ${isNewBus ? 'bus-new-pulse' : ''}`.trim();
     pill.textContent = busText;
     listEl.appendChild(pill);
   });
@@ -716,14 +742,17 @@ function loadDemoData() {
   ];
 
   STATE.students = [
-    { rowIndex: 2, first: 'Noah', last: 'Adams', classInfo: 'Miller - 4108', status: 'waiting', grade: '2', time: '', mode: '74', location: '' },
-    { rowIndex: 3, first: 'Lily', last: 'Allen', classInfo: 'Davis - 4112', status: 'Needed at Valet', grade: 'K', time: isoAgo(135), mode: '', location: '' },
-    { rowIndex: 4, first: 'Mia', last: 'Baker', classInfo: 'Clark - 4201', status: 'Needed at Valet', grade: '4', time: isoAgo(320), mode: '81', location: 'On the Way' },
-    { rowIndex: 5, first: 'Ethan', last: 'Carter', classInfo: 'Miller - 4108', status: 'Needed at Valet', grade: '2', time: isoAgo(45), mode: '', location: '' },
-    { rowIndex: 6, first: 'Sofia', last: 'Chen', classInfo: 'White - 4302', status: 'Needed at Pick Up Door', grade: '3', time: isoAgo(255), mode: '', location: 'Aftercare' },
-    { rowIndex: 7, first: 'Lucas', last: 'Davis', classInfo: 'Hall - 4101', status: 'Needed at Pick Up Door', grade: 'preK', time: isoAgo(90), mode: '', location: '' },
-    { rowIndex: 8, first: 'Ava', last: 'Miller', classInfo: 'Young - 4110', status: 'Needed at Valet', grade: '1', time: isoAgo(495), mode: '', location: 'Bus' },
-    { rowIndex: 9, first: 'Jaytzael', last: 'Ortiz P', classInfo: 'King - 4209', status: 'Needed at Pick Up Door', grade: '3', time: isoAgo(620), mode: '', location: '' },
-    { rowIndex: 10, first: 'Leo', last: 'Smith', classInfo: 'Scott - 4310', status: 'Needed at Pick Up Door', grade: '5', time: isoAgo(185), mode: '77', location: 'On the Way' }
+    { rowIndex: 2, first: 'Lucas', last: 'Davis', classInfo: 'Hall - 4101', status: 'Needed at Pick Up Door', grade: 'preK', time: isoAgo(90), mode: '', location: '' },
+    { rowIndex: 3, first: 'Maya', last: 'Brooks', classInfo: 'Grant - 4102', status: 'waiting', grade: 'preK', time: '', mode: '', location: '' },
+    { rowIndex: 4, first: 'Lily', last: 'Allen', classInfo: 'Davis - 4112', status: 'Needed at Valet', grade: 'K', time: isoAgo(135), mode: '', location: '' },
+    { rowIndex: 5, first: 'Owen', last: 'Reed', classInfo: 'Patel - 4114', status: 'waiting', grade: 'K', time: '', mode: '', location: '' },
+    { rowIndex: 6, first: 'Ava', last: 'Miller', classInfo: 'Young - 4110', status: 'Needed at Valet', grade: '1', time: isoAgo(495), mode: '', location: 'Bus' },
+    { rowIndex: 7, first: 'Caleb', last: 'Hayes', classInfo: 'Lopez - 4105', status: 'waiting', grade: '1', time: '', mode: '', location: '' },
+    { rowIndex: 8, first: 'Noah', last: 'Adams', classInfo: 'Miller - 4108', status: 'waiting', grade: '2', time: '', mode: '74', location: '' },
+    { rowIndex: 9, first: 'Ethan', last: 'Carter', classInfo: 'Miller - 4108', status: 'Needed at Valet', grade: '2', time: isoAgo(45), mode: '', location: '' },
+    { rowIndex: 10, first: 'Sofia', last: 'Chen', classInfo: 'White - 4302', status: 'Needed at Pick Up Door', grade: '3', time: isoAgo(255), mode: '', location: 'Aftercare' },
+    { rowIndex: 11, first: 'Jaytzael', last: 'Ortiz P', classInfo: 'King - 4209', status: 'Needed at Pick Up Door', grade: '3', time: isoAgo(620), mode: '', location: '' },
+    { rowIndex: 12, first: 'Mia', last: 'Baker', classInfo: 'Clark - 4201', status: 'Needed at Valet', grade: '4', time: isoAgo(320), mode: '81', location: 'On the Way' },
+    { rowIndex: 13, first: 'Leo', last: 'Smith', classInfo: 'Scott - 4310', status: 'Needed at Pick Up Door', grade: '5', time: isoAgo(185), mode: '77', location: 'On the Way' }
   ];
 }
