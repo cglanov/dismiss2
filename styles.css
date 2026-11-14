@@ -1,0 +1,645 @@
+/* ==========================================================================
+   Classroom Dismissal Monitor — Desktop Widescreen Styles
+   ========================================================================== */
+
+:root {
+  --navy: #1b365d;
+  --navy-dark: #10243e;
+  --slate-blue: #2b547e;
+  --bg-canvas: #f4f6f9;
+  --text-dark: #0f172a;
+  --text-muted: #475569;
+  --border-subtle: #cbd5e1;
+
+  /* Panel Theme Surfaces */
+  --buses-bg: #ffffff;
+  --buses-header-bg: #eef2f7;
+
+  --valet-bg: #fefce8;         /* Pleasant light yellow-ish */
+  --valet-border: #fde047;
+  --valet-header-bg: #fef08a;
+  --valet-accent: #854d0e;
+
+  --pickup-bg: #f0fdf4;        /* Pleasant light green-ish */
+  --pickup-border: #86efac;
+  --pickup-header-bg: #bbf7d0;
+  --pickup-accent: #166534;
+
+  /* Tile States */
+  --tile-bg: #ffffff;
+  --tile-border: #cbd5e1;
+  --tile-onway-bg: #e2e8f0;
+  --tile-onway-border: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-canvas);
+  color: var(--text-dark);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ==========================================================================
+   APP SHELL & TOP HEADER
+   ========================================================================== */
+.app-shell {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.top-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: linear-gradient(90deg, var(--navy-dark), var(--navy));
+  color: #ffffff;
+  padding: 10px 20px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+  z-index: 10;
+}
+
+.header-left,
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.btn-back {
+  background: #2563eb;
+  color: #ffffff;
+  border: 1px solid #60a5fa;
+  border-radius: 9px;
+  padding: 8px 15px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.08s;
+}
+
+.btn-back:hover {
+  background: #1d4ed8;
+}
+
+.btn-back:active {
+  transform: scale(0.98);
+}
+
+.title-group {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.header-title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.header-subtitle {
+  background: rgba(255, 255, 255, 0.16);
+  color: #e0f2fe;
+  padding: 3px 11px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.btn-sound {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-sound:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.btn-sound.muted {
+  opacity: 0.68;
+}
+
+.sync-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 999px;
+}
+
+.sync-live {
+  background: rgba(22, 163, 74, 0.25);
+  color: #86efac;
+  border: 1px solid rgba(134, 239, 172, 0.45);
+}
+
+.sync-warn {
+  background: rgba(217, 119, 6, 0.35);
+  color: #fde68a;
+  border: 1px solid rgba(253, 230, 138, 0.55);
+}
+
+.demo-banner {
+  background: #fef3c7;
+  color: #92400e;
+  border-bottom: 1px solid #f59e0b;
+  padding: 6px 16px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.screen {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   SCREEN 1: START SCREEN (GRADE & CLASS SELECTOR)
+   ========================================================================== */
+.screen-start {
+  overflow-y: auto;
+  padding: 28px 32px;
+}
+
+.start-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.start-section {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 22px 26px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.section-heading {
+  margin-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 10px;
+}
+
+.section-heading h2 {
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+  color: var(--navy);
+}
+
+.section-heading p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.filter-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.grade-grid {
+  grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+}
+
+.class-grid {
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+}
+
+.filter-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 76px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.12s, border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.filter-btn:hover {
+  transform: translateY(-2px);
+  background: #eff6ff;
+  border-color: #2563eb;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.14);
+}
+
+.filter-btn:active {
+  transform: scale(0.98);
+}
+
+.filter-btn.btn-all-grades {
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  border-color: #1d4ed8;
+  color: #ffffff;
+}
+
+.filter-btn.btn-all-grades:hover {
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  border-color: #60a5fa;
+}
+
+.filter-btn-label {
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: var(--navy);
+  text-align: center;
+}
+
+.filter-btn.btn-all-grades .filter-btn-label {
+  color: #ffffff;
+}
+
+.filter-btn-count {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.filter-btn.btn-all-grades .filter-btn-count {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+.filter-btn-count.has-active {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.filter-btn.btn-all-grades .filter-btn-count.has-active {
+  background: #fde047;
+  color: #0f172a;
+}
+
+/* ==========================================================================
+   SCREEN 2: THREE-PANEL MONITOR SCREEN
+   ========================================================================== */
+.screen-monitor {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  padding: 12px;
+  overflow: hidden;
+}
+
+.monitor-panel {
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  min-height: 0;
+}
+
+/* Left Panel: Called Buses (Dynamic pixel width set via JS textWidth) */
+.panel-buses {
+  flex: 0 0 auto;
+  background: var(--buses-bg);
+  border: 1.5px solid var(--border-subtle);
+}
+
+/* Middle & Right Panels share remaining horizontal space equally */
+.panel-valet {
+  flex: 1 1 0;
+  min-width: 0;
+  background: var(--valet-bg);
+  border: 1.5px solid var(--valet-border);
+}
+
+.panel-pickup {
+  flex: 1 1 0;
+  min-width: 0;
+  background: var(--pickup-bg);
+  border: 1.5px solid var(--pickup-border);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.panel-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot-valet {
+  background: #eab308;
+}
+
+.dot-pickup {
+  background: #16a34a;
+}
+
+.buses-header {
+  background: var(--buses-header-bg);
+  color: var(--navy);
+}
+
+.valet-header {
+  background: var(--valet-header-bg);
+  color: var(--valet-accent);
+}
+
+.pickup-header {
+  background: var(--pickup-header-bg);
+  color: var(--pickup-accent);
+}
+
+.panel-count {
+  font-size: 0.84rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.09);
+  color: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   LEFT PANEL: CALLED BUSES LIST
+   ========================================================================== */
+.buses-list {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bus-pill {
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  border-left: 5px solid var(--navy);
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 1.02rem;
+  font-weight: 800;
+  color: var(--navy);
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+
+.empty-buses {
+  text-align: center;
+  padding: 24px 8px;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+  white-space: normal;
+}
+
+/* ==========================================================================
+   MIDDLE & RIGHT PANELS: DYNAMIC SQUARISH STUDENT TILES
+   ========================================================================== */
+.tiles-grid {
+  flex: 1 1 0;
+  min-height: 0;
+  padding: 10px;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  overflow-x: hidden;
+  overflow-y: hidden; /* Switches to 'auto' automatically when floor is reached */
+}
+
+.empty-panel-state {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 140px;
+  color: var(--text-muted);
+  font-size: 0.96rem;
+  font-weight: 600;
+  opacity: 0.78;
+}
+
+.student-tile {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: var(--tile-bg);
+  border: 2px solid var(--tile-border);
+  border-radius: 12px;
+  padding: 10px 10px 8px;
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.07);
+  transition: background-color 0.18s ease, border-color 0.18s ease, opacity 0.18s ease, transform 0.12s ease;
+  overflow: hidden;
+  user-select: none;
+}
+
+.student-tile.tile-new-pulse {
+  animation: tileAppearPulse 1.6s ease-out;
+}
+
+@keyframes tileAppearPulse {
+  0% {
+    transform: scale(0.92);
+    box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.35);
+    border-color: #2563eb;
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 3px 8px rgba(15, 23, 42, 0.07);
+  }
+}
+
+/* Greyed-out visual state when 'On the Way' is checked */
+.student-tile.tile-on-way {
+  background: var(--tile-onway-bg);
+  border-color: var(--tile-onway-border);
+  box-shadow: none;
+}
+
+.student-tile.tile-on-way .tile-name-last,
+.student-tile.tile-on-way .tile-name-first {
+  color: #64748b;
+}
+
+.student-tile.tile-on-way .tile-minutes {
+  background: #cbd5e1;
+  color: #475569;
+}
+
+/* Top section of tile: Child's Name (left) + Whole-Minute Counter (right) */
+.tile-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 0;
+}
+
+.tile-names {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.tile-name-first {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  line-height: 1.15;
+  word-break: break-word;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.tile-name-last {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  line-height: 1.15;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Right Side: Whole-Minute Counter */
+.tile-minutes {
+  flex-shrink: 0;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: var(--navy);
+  font-size: 0.88rem;
+  font-weight: 800;
+  padding: 3px 7px;
+  border-radius: 7px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.tile-minutes.min-warn {
+  background: #fef3c7;
+  border-color: #f59e0b;
+  color: #92400e;
+}
+
+.tile-minutes.min-alert {
+  background: #fee2e2;
+  border-color: #ef4444;
+  color: #b91c1c;
+}
+
+/* Bottom section of tile: Exclusive Checkboxes (Bus, Aftercare, On the Way) */
+.tile-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3px 4px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  margin-top: 4px;
+}
+
+.loc-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+  padding: 2px 3px;
+  border-radius: 5px;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.loc-option:hover {
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.loc-option input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: #2563eb;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.loc-option.checked-bus {
+  color: #1d4ed8;
+}
+
+.loc-option.checked-aftercare {
+  color: #7c3aed;
+}
+
+.loc-option.checked-onway {
+  color: #0f172a;
+}
