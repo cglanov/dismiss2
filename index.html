@@ -3,26 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dismissal — Classroom Monitor</title>
+  <title>DISMISSAL — Classroom Monitor</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="app-shell">
 
-    <!-- Persistent Desktop Header -->
+    <!-- Persistent DISMISSAL Banner Header -->
     <header class="top-header">
       <div class="header-left">
         <button type="button" id="btn-back-start" class="btn-back hidden">
           ← Start Screen
         </button>
         <div class="title-group">
-          <h1 id="header-title" class="header-title">Dismissal</h1>
+          <h1 id="header-title" class="header-title">DISMISSAL</h1>
           <span id="header-subtitle" class="header-subtitle hidden"></span>
         </div>
       </div>
 
       <div class="header-right">
-        <button type="button" id="btn-sound-toggle" class="btn-sound" title="Toggle new-student notification chime">
+        <button type="button" id="btn-sound-toggle" class="btn-sound" title="Toggle new-student and new-bus notification chime">
           🔔 Chime On
         </button>
         <span id="sync-badge" class="sync-badge sync-live">Live • Synced</span>
@@ -35,26 +35,10 @@
     </div>
 
     <!-- ===================================================================
-         SCREEN 1: START SCREEN (NO PIN — ALL GRADES, GRADES & CLASSES)
+         SCREEN 1: 7-PANEL GRADE & TEACHER START SCREEN (preK, K, 1, 2, 3, 4, 5)
          =================================================================== -->
     <main id="screen-start" class="screen screen-start">
-      <div class="start-container">
-        <section class="start-section">
-          <div class="section-heading">
-            <h2>Select Grade View</h2>
-            <p>Monitor all students across the school or filter by a specific grade level</p>
-          </div>
-          <div id="grade-buttons-grid" class="filter-grid grade-grid"></div>
-        </section>
-
-        <section class="start-section">
-          <div class="section-heading">
-            <h2>Select Classroom / Teacher</h2>
-            <p>Filter dismissal alerts for a specific classroom</p>
-          </div>
-          <div id="class-buttons-grid" class="filter-grid class-grid"></div>
-        </section>
-      </div>
+      <div id="grade-panels-container" class="grade-panels-grid"></div>
     </main>
 
     <!-- ===================================================================
