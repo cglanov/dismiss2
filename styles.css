@@ -5,22 +5,21 @@
 :root {
   --navy: #1b365d;
   --navy-dark: #10243e;
-  --slate-blue: #2b547e;
-  --bg-canvas: #f4f6f9;
+  --bg-canvas: #f1f5f9;
   --text-dark: #0f172a;
   --text-muted: #475569;
   --border-subtle: #cbd5e1;
 
-  /* Panel Theme Surfaces */
+  /* Monitor Panel Surfaces */
   --buses-bg: #ffffff;
   --buses-header-bg: #eef2f7;
 
-  --valet-bg: #fefce8;         /* Pleasant light yellow-ish */
+  --valet-bg: #fefce8;         /* Light yellow-ish */
   --valet-border: #fde047;
   --valet-header-bg: #fef08a;
   --valet-accent: #854d0e;
 
-  --pickup-bg: #f0fdf4;        /* Pleasant light green-ish */
+  --pickup-bg: #f0fdf4;        /* Light green-ish */
   --pickup-border: #86efac;
   --pickup-header-bg: #bbf7d0;
   --pickup-accent: #166534;
@@ -28,8 +27,6 @@
   /* Tile States */
   --tile-bg: #ffffff;
   --tile-border: #cbd5e1;
-  --tile-onway-bg: #e2e8f0;
-  --tile-onway-border: #94a3b8;
 }
 
 * {
@@ -52,7 +49,7 @@ html, body {
 }
 
 /* ==========================================================================
-   APP SHELL & TOP HEADER
+   APP SHELL & DISMISSAL BANNER HEADER
    ========================================================================== */
 .app-shell {
   position: fixed;
@@ -72,7 +69,7 @@ html, body {
   gap: 16px;
   background: linear-gradient(90deg, var(--navy-dark), var(--navy));
   color: #ffffff;
-  padding: 10px 20px;
+  padding: 12px 22px;
   flex-shrink: 0;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
   z-index: 10;
@@ -107,23 +104,23 @@ html, body {
 
 .title-group {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 12px;
 }
 
 .header-title {
   margin: 0;
-  font-size: 1.4rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
+  font-size: 1.55rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
 }
 
 .header-subtitle {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.18);
   color: #e0f2fe;
-  padding: 3px 11px;
+  padding: 4px 12px;
   border-radius: 999px;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   font-weight: 700;
 }
 
@@ -184,130 +181,207 @@ html, body {
 }
 
 /* ==========================================================================
-   SCREEN 1: START SCREEN (GRADE & CLASS SELECTOR)
+   SCREEN 1: 7-PANEL GRADE & TEACHER START SCREEN
+   Order: preK, K, 1, 2, 3, 4, 5
    ========================================================================== */
 .screen-start {
-  overflow-y: auto;
-  padding: 28px 32px;
-}
-
-.start-container {
-  max-width: 1240px;
-  margin: 0 auto;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  overflow: hidden;
 }
 
-.start-section {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 22px 26px;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
-}
-
-.section-heading {
-  margin-bottom: 16px;
-  border-bottom: 1px solid #f1f5f9;
-  padding-bottom: 10px;
-}
-
-.section-heading h2 {
-  margin: 0 0 4px;
-  font-size: 1.15rem;
-  color: var(--navy);
-}
-
-.section-heading p {
-  margin: 0;
-  font-size: 0.88rem;
-  color: var(--text-muted);
-}
-
-.filter-grid {
+.grade-panels-grid {
+  flex: 1 1 0;
+  min-height: 0;
   display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 12px;
 }
 
-.grade-grid {
-  grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
-}
-
-.class-grid {
-  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
-}
-
-.filter-btn {
+.grade-panel {
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  border-radius: 16px;
+  padding: 12px 10px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07);
+  border: 2px solid rgba(15, 23, 42, 0.1);
+  overflow: hidden;
+}
+
+/* Panel Background Colors */
+.grade-panel-preK {
+  background: linear-gradient(180deg, #dcfce7 0%, #fef9c3 100%);
+  border-color: #86efac;
+}
+
+.grade-panel-K {
+  background-color: #ffedd5; /* Light orange */
+  border-color: #fdba74;
+}
+
+.grade-panel-1 {
+  background-color: #fee2e2; /* Light red */
+  border-color: #fca5a5;
+}
+
+.grade-panel-2 {
+  background-color: #dcfce7; /* Light green */
+  border-color: #86efac;
+}
+
+.grade-panel-3 {
+  background-color: #fef9c3; /* Light yellow */
+  border-color: #fde047;
+}
+
+.grade-panel-4 {
+  background-color: #ffedd5; /* Light orange */
+  border-color: #fdba74;
+}
+
+.grade-panel-5 {
+  background-color: #fee2e2; /* Light red */
+  border-color: #fca5a5;
+}
+
+.grade-panel-header {
+  text-align: center;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 2px solid rgba(15, 23, 42, 0.1);
+  flex-shrink: 0;
+}
+
+.grade-panel-header h2 {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: var(--text-dark);
+  letter-spacing: 0.02em;
+}
+
+.teacher-buttons-list {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 2px;
+}
+
+.teacher-btn {
+  display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 6px;
-  min-height: 76px;
-  padding: 12px 14px;
-  background: #f8fafc;
-  border: 2px solid #cbd5e1;
-  border-radius: 12px;
+  width: 100%;
+  min-height: 46px;
+  padding: 9px 11px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1.5px solid rgba(15, 23, 42, 0.14);
+  border-radius: 10px;
+  color: var(--text-dark);
+  font-size: 0.96rem;
+  font-weight: 700;
+  text-align: left;
   cursor: pointer;
-  transition: transform 0.12s, border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.05);
+  transition: transform 0.1s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  flex-shrink: 0;
 }
 
-.filter-btn:hover {
-  transform: translateY(-2px);
-  background: #eff6ff;
-  border-color: #2563eb;
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.14);
+.teacher-btn:hover {
+  background: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px rgba(15, 23, 42, 0.12);
 }
 
-.filter-btn:active {
+.teacher-btn:active {
   transform: scale(0.98);
 }
 
-.filter-btn.btn-all-grades {
-  background: linear-gradient(135deg, #1e3a8a, #2563eb);
-  border-color: #1d4ed8;
+.teacher-btn-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.teacher-active-dot {
+  flex-shrink: 0;
+  background: #2563eb;
   color: #ffffff;
-}
-
-.filter-btn.btn-all-grades:hover {
-  background: linear-gradient(135deg, #1e40af, #3b82f6);
-  border-color: #60a5fa;
-}
-
-.filter-btn-label {
-  font-size: 1.08rem;
+  font-size: 0.72rem;
   font-weight: 800;
-  color: var(--navy);
-  text-align: center;
-}
-
-.filter-btn.btn-all-grades .filter-btn-label {
-  color: #ffffff;
-}
-
-.filter-btn-count {
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 2px 9px;
+  padding: 2px 7px;
   border-radius: 999px;
-  background: #e2e8f0;
-  color: #334155;
 }
 
-.filter-btn.btn-all-grades .filter-btn-count {
-  background: rgba(255, 255, 255, 0.22);
+.no-teachers-note {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+  padding: 16px 6px;
+  opacity: 0.75;
+}
+
+/* Bottom 'Whole Grade' Button */
+.whole-grade-btn {
+  margin-top: 10px;
+  width: 100%;
+  min-height: 50px;
+  padding: 10px 8px;
+  border: none;
+  border-radius: 11px;
   color: #ffffff;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
+  transition: transform 0.1s ease, filter 0.15s ease;
 }
 
-.filter-btn-count.has-active {
-  background: #dbeafe;
-  color: #1d4ed8;
+.whole-grade-btn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
 }
 
-.filter-btn.btn-all-grades .filter-btn-count.has-active {
-  background: #fde047;
-  color: #0f172a;
+.whole-grade-btn:active {
+  transform: scale(0.98);
+}
+
+/* Bottom Button Dark Colors by Grade */
+.whole-grade-preK {
+  background-color: #15803d; /* Dark green */
+}
+
+.whole-grade-K {
+  background-color: #c2410c; /* Dark orange */
+}
+
+.whole-grade-1 {
+  background-color: #b91c1c; /* Dark red */
+}
+
+.whole-grade-2 {
+  background-color: #15803d; /* Dark green */
+}
+
+.whole-grade-3 {
+  background-color: #a16207; /* Dark yellow */
+}
+
+.whole-grade-4 {
+  background-color: #c2410c; /* Dark orange */
+}
+
+.whole-grade-5 {
+  background-color: #b91c1c; /* Dark red */
 }
 
 /* ==========================================================================
@@ -441,6 +515,23 @@ html, body {
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
 }
 
+.bus-pill.bus-new-pulse {
+  animation: busAppearPulse 1.6s ease-out;
+}
+
+@keyframes busAppearPulse {
+  0% {
+    background-color: #dbeafe;
+    border-color: #2563eb;
+    transform: scale(0.96);
+  }
+  100% {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+    transform: scale(1);
+  }
+}
+
 .empty-buses {
   text-align: center;
   padding: 24px 8px;
@@ -486,7 +577,7 @@ html, body {
   border-radius: 12px;
   padding: 10px 10px 8px;
   box-shadow: 0 3px 8px rgba(15, 23, 42, 0.07);
-  transition: background-color 0.18s ease, border-color 0.18s ease, opacity 0.18s ease, transform 0.12s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   overflow: hidden;
   user-select: none;
 }
@@ -511,21 +602,13 @@ html, body {
   }
 }
 
-/* Greyed-out visual state when 'On the Way' is checked */
+/* Transparent visual state when 'On the Way' is checked */
 .student-tile.tile-on-way {
-  background: var(--tile-onway-bg);
-  border-color: var(--tile-onway-border);
+  opacity: 0.36;
+  background: rgba(255, 255, 255, 0.22);
+  border-style: dashed;
+  border-color: rgba(15, 23, 42, 0.32);
   box-shadow: none;
-}
-
-.student-tile.tile-on-way .tile-name-last,
-.student-tile.tile-on-way .tile-name-first {
-  color: #64748b;
-}
-
-.student-tile.tile-on-way .tile-minutes {
-  background: #cbd5e1;
-  color: #475569;
 }
 
 /* Top section of tile: Child's Name (left) + Whole-Minute Counter (right) */
